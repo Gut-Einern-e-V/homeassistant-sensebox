@@ -1,7 +1,10 @@
 # openSenseMap Sensors for Home Assistant
 
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
-[![GitHub Release](https://img.shields.io/github/v/release/Gut-Einern-e-V/homeassistant-sensebox)](https://github.com/Gut-Einern-e-V/homeassistant-sensebox/releases)
+[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Gut-Einern-e-V&repository=homeassistant-sensebox&category=integration)
+
+[![HACS](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+[![GitHub Release](https://img.shields.io/github/v/release/Gut-Einern-e-V/homeassistant-sensebox?style=for-the-badge)](https://github.com/Gut-Einern-e-V/homeassistant-sensebox/releases)
+[![Validate](https://img.shields.io/github/actions/workflow/status/Gut-Einern-e-V/homeassistant-sensebox/validate.yml?label=Validate&style=for-the-badge)](https://github.com/Gut-Einern-e-V/homeassistant-sensebox/actions/workflows/validate.yml)
 
 A Home Assistant custom integration that fetches sensor data from [openSenseMap](https://opensensemap.org) senseBox stations via their public API.
 
@@ -13,10 +16,17 @@ A Home Assistant custom integration that fetches sensor data from [openSenseMap]
 - **Proper HA device classes** – enables long-term statistics, energy dashboard compatibility, etc.
 - **Cloud polling** via `DataUpdateCoordinator` (default: every 5 minutes)
 - **No external dependencies** – uses HA's built-in `aiohttp` session
+- **Tested with Home Assistant 2026.3**
 
 ## Installation
 
 ### HACS (recommended)
+
+Click the button below to add this integration via HACS:
+
+[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Gut-Einern-e-V&repository=homeassistant-sensebox&category=integration)
+
+Or install manually via HACS:
 
 1. Open HACS in your Home Assistant instance.
 2. Click the **⋮** menu → **Custom repositories**.

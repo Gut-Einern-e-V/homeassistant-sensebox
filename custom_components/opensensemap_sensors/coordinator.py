@@ -9,6 +9,7 @@ from typing import Any
 import aiohttp
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import API_URL, CONF_SCAN_INTERVAL, CONF_STATION_ID, DEFAULT_SCAN_INTERVAL, DOMAIN
@@ -58,7 +59,7 @@ class OpenSenseMapCoordinator(DataUpdateCoordinator[OpenSenseMapData]):
 
     async def _fetch_api(self) -> dict[str, Any]:
         """Perform the actual HTTP GET request."""
-        session = self.hass.helpers.aiohttp_client.async_get_clientsession()
+        session = async_get_clientsession(self.hass)
         async with session.get(self._api_url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
             resp.raise_for_status()
             return await resp.json()  # type: ignore[return-value]
