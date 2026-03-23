@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "senseBox verbinden",
+        "description": "Gib die Station-ID deiner senseBox von opensensemap.org ein.",
+        "data": {
+          "station_id": "Station-ID",
+          "scan_interval": "Aktualisierungsintervall (Sekunden)"
+        },
+        "data_description": {
+          "station_id": "Die eindeutige 24-stellige Hex-ID deiner senseBox (z. B. 63b2ab763ee774001b3585b1).",
+          "scan_interval": "Wie oft die API abgefragt wird (60 – 3600 s, Standard 300)."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur openSenseMap-API nicht möglich. Bitte Netzwerkverbindung prüfen.",
+      "station_not_found": "Keine senseBox mit dieser Station-ID gefunden. Bitte ID überprüfen.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "abort": {
+      "already_configured": "Diese senseBox ist bereits konfiguriert."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "domain": "opensensemap_sensors",
+  "name": "openSenseMap Sensors",
+  "codeowners": ["@Gut-Einern-e-V"],
+  "config_flow": true,
+  "documentation": "https://github.com/Gut-Einern-e-V/homeassistant-sensebox",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Gut-Einern-e-V/homeassistant-sensebox/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
