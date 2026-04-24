@@ -165,6 +165,8 @@ class OpenSenseMapSensor(CoordinatorEntity[OpenSenseMapCoordinator], SensorEntit
             attrs["sensor_type"] = sensor_data["sensor_type"]
         if sensor_data.get("last_measurement_at"):
             attrs["last_measurement_at"] = sensor_data["last_measurement_at"]
+        if self.coordinator.data is not None and self.coordinator.data.fetched_at is not None:
+            attrs["data_fetched_at"] = self.coordinator.data.fetched_at.isoformat()
         return attrs if attrs else None
 
     # ── Availability ─────────────────────────────────────────────────────────
