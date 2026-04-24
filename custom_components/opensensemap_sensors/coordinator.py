@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import aiohttp
@@ -24,9 +24,11 @@ class OpenSenseMapData:
         self,
         box_name: str,
         sensors: dict[str, dict[str, Any]],
+        fetched_at: datetime,
     ) -> None:
         self.box_name = box_name
         self.sensors = sensors
+        self.fetched_at: datetime = fetched_at
 
 
 class OpenSenseMapCoordinator(DataUpdateCoordinator[OpenSenseMapData]):
@@ -48,11 +50,25 @@ class OpenSenseMapCoordinator(DataUpdateCoordinator[OpenSenseMapData]):
     # ── Core fetch & parse ──────────────────────────────────────────────────
 
     async def _async_update_data(self) -> OpenSenseMapData:
-        """Fetch the latest data from the openSenseMap API."""
+        """Fetch the latest data from the openSenseMap API.
+
+        On transient errors (timeout, connection failure) the last successfully
+        fetched data is returned so that sensor values remain available and no
+        gaps appear in the history.  A warning is logged so the problem is still
+        visible in the HA logs.  A hard ``UpdateFailed`` is only raised when
+        there is no previous data to fall back to (i.e. the very first fetch).
+        """
         try:
+            fetch_time = datetime.now(tz=timezone.utc)
             raw = await self._fetch_api()
-            return self._parse(raw)
+            return self._parse(raw, fetched_at=fetch_time)
         except (aiohttp.ClientError, TimeoutError) as err:
+            if self.data is not None:
+                _LOGGER.warning(
+                    "Transient error fetching openSenseMap data, keeping last known values: %s",
+                    err,
+                )
+                return self.data
             raise UpdateFailed(f"Connection error while fetching data: {err}") from err
         except (KeyError, ValueError) as err:
             raise UpdateFailed(f"Unexpected API response: {err}") from err
@@ -65,7 +81,7 @@ class OpenSenseMapCoordinator(DataUpdateCoordinator[OpenSenseMapData]):
             return await resp.json()  # type: ignore[return-value]
 
     @staticmethod
-    def _parse(data: dict[str, Any]) -> OpenSenseMapData:
+    def _parse(data: dict[str, Any], fetched_at: datetime) -> OpenSenseMapData:
         """Parse the raw API JSON into a structured format.
 
         Only sensors that have a ``lastMeasurement`` with a ``value`` field are
@@ -94,4 +110,4 @@ class OpenSenseMapCoordinator(DataUpdateCoordinator[OpenSenseMapData]):
                 "last_measurement_at": last.get("createdAt"),
             }
 
-        return OpenSenseMapData(box_name=box_name, sensors=sensors)
+        return OpenSenseMapData(box_name=box_name, sensors=sensors, fetched_at=fetched_at)
