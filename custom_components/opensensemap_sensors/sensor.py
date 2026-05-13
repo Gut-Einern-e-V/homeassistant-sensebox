@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import logging
 from typing import Any
 
@@ -19,6 +20,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     CONF_STATION_ID,
     DOMAIN,
+    INACTIVITY_THRESHOLD,
     MANUFACTURER,
     MODEL,
     SENSOR_DEVICE_CLASS_MAP,
@@ -174,7 +176,12 @@ class OpenSenseMapSensor(CoordinatorEntity[OpenSenseMapCoordinator], SensorEntit
     @property
     def available(self) -> bool:
         """Return True if coordinator data contains our sensor."""
-        return super().available and self._get_sensor_data() is not None
+        if not super().available:
+            return False
+        sensor_data = self._get_sensor_data()
+        if sensor_data is None:
+            return False
+        return self._is_recent(sensor_data)
 
     # ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -183,3 +190,20 @@ class OpenSenseMapSensor(CoordinatorEntity[OpenSenseMapCoordinator], SensorEntit
         if self.coordinator.data is None:
             return None
         return self.coordinator.data.sensors.get(self._sensor_id)
+
+    def _is_recent(self, sensor_data: dict[str, Any]) -> bool:
+        """Return True when the sensor's last measurement is fresh enough."""
+        measured_at = _parse_timestamp(sensor_data.get("last_measurement_at"))
+        if measured_at is None:
+            return True
+        return datetime.now(timezone.utc) - measured_at <= INACTIVITY_THRESHOLD
+
+
+def _parse_timestamp(raw: Any) -> datetime | None:
+    """Parse API timestamps like 2026-05-13T14:00:00.000Z."""
+    if not isinstance(raw, str) or not raw:
+        return None
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None

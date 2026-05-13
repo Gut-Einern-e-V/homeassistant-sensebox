@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "opensensemap_sensors"
@@ -12,6 +13,7 @@ CONF_SCAN_INTERVAL: Final = "scan_interval"
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
 DEFAULT_SCAN_INTERVAL: Final = 300  # seconds (5 minutes)
+INACTIVITY_THRESHOLD: Final = timedelta(minutes=10)
 
 # ── API ──────────────────────────────────────────────────────────────────────
 API_URL: Final = "https://api.opensensemap.org/boxes/{station_id}"
