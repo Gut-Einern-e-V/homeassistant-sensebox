@@ -44,8 +44,10 @@ Or install manually via HACS:
 
 1. Go to **Settings → Devices & Services → Add Integration**.
 2. Search for **openSenseMap Sensors**.
-3. Enter your senseBox **Station ID** (the 24-character hex ID from opensensemap.org).
-4. Optionally adjust the polling interval (default: 300 seconds).
+3. Either:
+   - Enter your senseBox **Station ID** (the 24-character hex ID from opensensemap.org), or
+   - Leave Station ID empty and search for **active nearby senseBoxes** (last measurement in the past 10 days) based on your Home Assistant location.
+4. Optionally adjust the nearby search radius (in km) and polling interval (default: 300 seconds).
 
 ## Finding your Station ID
 
