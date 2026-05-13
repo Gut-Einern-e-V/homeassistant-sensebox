@@ -12,6 +12,7 @@ A Home Assistant custom integration that fetches sensor data from [openSenseMap]
 
 - **Config Flow** – set up via the UI (Settings → Integrations → Add → "openSenseMap Sensors")
 - **Automatic sensor discovery** – creates one entity per active sensor on your senseBox
+- **Inactivity alarm binary sensor** – reports a problem when no sensor has sent new data for 10 minutes
 - **Supports all common senseBox sensors**: PM2.5, PM10, Temperature, Humidity, Pressure, UV, Illuminance, Sound Level, Soil Moisture, Wind Speed, CO₂, VOC, and more
 - **Proper HA device classes** – enables long-term statistics, energy dashboard compatibility, etc.
 - **Cloud polling** via `DataUpdateCoordinator` (default: every 5 minutes)
