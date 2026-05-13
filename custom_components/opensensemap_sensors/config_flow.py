@@ -167,8 +167,10 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
 
         try:
             boxes = await self._fetch_nearby_boxes(f"{latitude},{longitude}", max_distance)
-            if not any(self._is_active_box(box, cutoff) for box in boxes):
+            active_boxes = [box for box in boxes if self._is_active_box(box, cutoff)]
+            if not active_boxes:
                 boxes = await self._fetch_nearby_boxes(f"{longitude},{latitude}", max_distance)
+                active_boxes = [box for box in boxes if self._is_active_box(box, cutoff)]
         except (aiohttp.ClientError, TimeoutError):
             _LOGGER.exception("Error loading nearby senseBoxes from openSenseMap API")
             return {}, "cannot_connect"
@@ -177,9 +179,9 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
             return {}, "unknown"
 
         stations: dict[str, str] = {}
-        for box in boxes if isinstance(boxes, list) else []:
+        for box in active_boxes:
             station_id = box.get("_id")
-            if not station_id or not self._is_active_box(box, cutoff):
+            if not station_id:
                 continue
             name = box.get("name", station_id)
             stations[station_id] = f"{name} ({station_id})"
@@ -202,16 +204,16 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
             return [item for item in payload if isinstance(item, dict)]
         return []
 
-    @staticmethod
-    def _is_active_box(box: dict[str, Any], cutoff: datetime) -> bool:
+    @classmethod
+    def _is_active_box(cls, box: dict[str, Any], cutoff: datetime) -> bool:
         """Return True if the senseBox has measurements newer than cutoff."""
-        updated_at = OpenSenseMapConfigFlow._parse_timestamp(box.get("updatedAt"))
+        updated_at = cls._parse_timestamp(box.get("updatedAt"))
         if updated_at and updated_at >= cutoff:
             return True
 
         for sensor in box.get("sensors", []):
             last_measurement = sensor.get("lastMeasurement", {})
-            measured_at = OpenSenseMapConfigFlow._parse_timestamp(last_measurement.get("createdAt"))
+            measured_at = cls._parse_timestamp(last_measurement.get("createdAt"))
             if measured_at and measured_at >= cutoff:
                 return True
 
