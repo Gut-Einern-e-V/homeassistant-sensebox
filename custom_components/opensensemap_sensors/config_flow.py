@@ -162,15 +162,15 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
         if latitude is None or longitude is None:
             return {}, "location_not_set"
 
-        cutoff = datetime.now(tz=timezone.utc) - timedelta(days=ACTIVE_LOOKBACK_DAYS)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=ACTIVE_LOOKBACK_DAYS)
         max_distance = str(radius_km * 1000)
 
         try:
             boxes = await self._fetch_nearby_boxes(f"{latitude},{longitude}", max_distance)
             active_boxes = [box for box in boxes if self._is_active_box(box, cutoff)]
             if not active_boxes:
-                # Some openSenseMap responses appear to interpret `near` as lon,lat.
-                # Retry in reversed order so nearby lookup stays robust.
+                # API docs typically use `near=lat,lon`, but some responses appear
+                # to interpret `near` as `lon,lat`; retry to keep lookup robust.
                 boxes = await self._fetch_nearby_boxes(f"{longitude},{latitude}", max_distance)
                 active_boxes = [box for box in boxes if self._is_active_box(box, cutoff)]
         except (aiohttp.ClientError, TimeoutError):
