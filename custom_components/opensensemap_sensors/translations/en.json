@@ -3,19 +3,30 @@
     "step": {
       "user": {
         "title": "Connect to senseBox",
-        "description": "Enter the station ID of your senseBox from opensensemap.org.",
+        "description": "Enter a Station ID directly, or leave it empty to find active nearby senseBoxes using Home Assistant's location.",
         "data": {
           "station_id": "Station ID",
+          "nearby_radius_km": "Nearby search radius (km)",
           "scan_interval": "Update interval (seconds)"
         },
         "data_description": {
-          "station_id": "The unique 24-character hex ID of your senseBox (e.g. 63b2ab763ee774001b3585b1).",
+          "station_id": "The unique 24-character hex ID of your senseBox (e.g. 63b2ab763ee774001b3585b1). Leave empty to search nearby.",
+          "nearby_radius_km": "Distance around Home Assistant's configured location used when searching nearby active senseBoxes.",
           "scan_interval": "How often to poll the API (60 – 3600 s, default 300)."
+        }
+      },
+      "nearby": {
+        "title": "Select nearby senseBox",
+        "description": "Choose an active nearby senseBox (last measurement within 10 days).",
+        "data": {
+          "station_id": "Nearby senseBox"
         }
       }
     },
     "error": {
       "cannot_connect": "Unable to connect to the openSenseMap API. Please check your network connection.",
+      "location_not_set": "Home Assistant location must be configured to search nearby senseBoxes.",
+      "no_active_nearby": "No active nearby senseBoxes were found in the selected radius.",
       "station_not_found": "No senseBox found with this station ID. Please verify the ID.",
       "unknown": "An unexpected error occurred."
     },
