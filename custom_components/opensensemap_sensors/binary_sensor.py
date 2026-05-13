@@ -16,6 +16,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, INACTIVITY_THRESHOLD
 from .coordinator import OpenSenseMapCoordinator
+from .utils import parse_timestamp
 
 
 async def async_setup_entry(
@@ -80,7 +81,7 @@ class OpenSenseMapInactivityBinarySensor(
         timestamps = [
             parsed
             for sensor in self.coordinator.data.sensors.values()
-            if (parsed := _parse_timestamp(sensor.get("last_measurement_at"))) is not None
+            if (parsed := parse_timestamp(sensor.get("last_measurement_at"))) is not None
         ]
         return max(timestamps) if timestamps else None
 
@@ -93,18 +94,8 @@ class OpenSenseMapInactivityBinarySensor(
             1
             for sensor in self.coordinator.data.sensors.values()
             if (
-                measured_at := _parse_timestamp(sensor.get("last_measurement_at"))
+                measured_at := parse_timestamp(sensor.get("last_measurement_at"))
             )
             is not None
             and (now - measured_at) <= INACTIVITY_THRESHOLD
         )
-
-
-def _parse_timestamp(raw: Any) -> datetime | None:
-    """Parse API timestamps like 2026-05-13T14:00:00.000Z."""
-    if not isinstance(raw, str) or not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
-    except ValueError:
-        return None

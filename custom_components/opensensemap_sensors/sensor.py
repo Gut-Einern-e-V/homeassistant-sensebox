@@ -27,6 +27,7 @@ from .const import (
     SENSOR_ICON_MAP,
 )
 from .coordinator import OpenSenseMapCoordinator, OpenSenseMapData
+from .utils import parse_timestamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -193,17 +194,7 @@ class OpenSenseMapSensor(CoordinatorEntity[OpenSenseMapCoordinator], SensorEntit
 
     def _is_recent(self, sensor_data: dict[str, Any]) -> bool:
         """Return True when the sensor's last measurement is fresh enough."""
-        measured_at = _parse_timestamp(sensor_data.get("last_measurement_at"))
+        measured_at = parse_timestamp(sensor_data.get("last_measurement_at"))
         if measured_at is None:
             return True
         return datetime.now(timezone.utc) - measured_at <= INACTIVITY_THRESHOLD
-
-
-def _parse_timestamp(raw: Any) -> datetime | None:
-    """Parse API timestamps like 2026-05-13T14:00:00.000Z."""
-    if not isinstance(raw, str) or not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
-    except ValueError:
-        return None
