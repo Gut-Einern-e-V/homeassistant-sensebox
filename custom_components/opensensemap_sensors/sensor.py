@@ -196,5 +196,5 @@ class OpenSenseMapSensor(CoordinatorEntity[OpenSenseMapCoordinator], SensorEntit
         """Return True when the sensor's last measurement is fresh enough."""
         measured_at = parse_timestamp(sensor_data.get("last_measurement_at"))
         if measured_at is None:
-            return True
+            return False
         return datetime.now(timezone.utc) - measured_at <= INACTIVITY_THRESHOLD
