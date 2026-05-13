@@ -169,6 +169,8 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
             boxes = await self._fetch_nearby_boxes(f"{latitude},{longitude}", max_distance)
             active_boxes = [box for box in boxes if self._is_active_box(box, cutoff)]
             if not active_boxes:
+                # Some openSenseMap responses appear to interpret `near` as lon,lat.
+                # Retry in reversed order so nearby lookup stays robust.
                 boxes = await self._fetch_nearby_boxes(f"{longitude},{latitude}", max_distance)
                 active_boxes = [box for box in boxes if self._is_active_box(box, cutoff)]
         except (aiohttp.ClientError, TimeoutError):
@@ -186,6 +188,7 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
             name = box.get("name", station_id)
             stations[station_id] = f"{name} ({station_id})"
 
+        # Sort by display label for a predictable dropdown order.
         return dict(sorted(stations.items(), key=lambda item: item[1].lower())), None
 
     async def _fetch_nearby_boxes(self, near: str, max_distance: str) -> list[dict[str, Any]]:
