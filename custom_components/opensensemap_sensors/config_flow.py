@@ -163,17 +163,12 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
             return {}, "location_not_set"
 
         cutoff = datetime.now(tz=timezone.utc) - timedelta(days=ACTIVE_LOOKBACK_DAYS)
-        session = async_get_clientsession(self.hass)
-        params = {"near": f"{longitude},{latitude}", "maxDistance": str(radius_km * 1000)}
+        max_distance = str(radius_km * 1000)
 
         try:
-            async with session.get(
-                BOXES_API_URL,
-                params=params,
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as resp:
-                resp.raise_for_status()
-                boxes = await resp.json()
+            boxes = await self._fetch_nearby_boxes(f"{latitude},{longitude}", max_distance)
+            if not any(self._is_active_box(box, cutoff) for box in boxes):
+                boxes = await self._fetch_nearby_boxes(f"{longitude},{latitude}", max_distance)
         except (aiohttp.ClientError, TimeoutError):
             _LOGGER.exception("Error loading nearby senseBoxes from openSenseMap API")
             return {}, "cannot_connect"
@@ -189,8 +184,23 @@ class OpenSenseMapConfigFlow(ConfigFlow, domain=DOMAIN):
             name = box.get("name", station_id)
             stations[station_id] = f"{name} ({station_id})"
 
-        sorted_stations = dict(sorted(stations.items(), key=lambda item: item[1].lower()))
-        return sorted_stations, None
+        return dict(sorted(stations.items(), key=lambda item: item[1].lower())), None
+
+    async def _fetch_nearby_boxes(self, near: str, max_distance: str) -> list[dict[str, Any]]:
+        """Fetch nearby boxes from the openSenseMap API."""
+        session = async_get_clientsession(self.hass)
+        params = {"near": near, "maxDistance": max_distance}
+        async with session.get(
+            BOXES_API_URL,
+            params=params,
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as resp:
+            resp.raise_for_status()
+            payload = await resp.json()
+
+        if isinstance(payload, list):
+            return [item for item in payload if isinstance(item, dict)]
+        return []
 
     @staticmethod
     def _is_active_box(box: dict[str, Any], cutoff: datetime) -> bool:
